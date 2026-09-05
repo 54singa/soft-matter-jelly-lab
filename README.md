@@ -2,6 +2,12 @@
 
 A runnable Three.js jelly playground based on the supplied recording, with a round pudding silhouette: a smaller flat top, gently fluted tapered sides, and a broad rounded base. The page contains only the material experiment, with no surrounding video or social UI.
 
+## Live demo
+
+**[Open the interactive jelly playground](https://54singa.github.io/soft-matter-jelly-lab/)**
+
+[![Soft Matter interactive jelly playground](docs/soft-matter-jelly-lab.png)](https://54singa.github.io/soft-matter-jelly-lab/)
+
 ## Run locally
 
 Requires Node.js 22.13 or newer.
