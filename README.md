@@ -1,47 +1,49 @@
-# Soft Matter.
+# Soft Matter · 果冻实验室
 
-A runnable Three.js jelly playground based on the supplied recording, with a round pudding silhouette: a smaller flat top, gently fluted tapered sides, and a broad rounded base. The page contains only the material experiment, with no surrounding video or social UI.
+**简体中文** ｜ [English](README_EN.md)
 
-## Live demo
+一个可交互的 Three.js 软体果冻实验。果冻采用圆润的布丁造型：顶部较小且平缓，侧面带有轻微凹槽，底部宽大圆润。页面专注于材质、形变与手感实验，不包含视频或社交平台界面。
 
-**[Open the interactive jelly playground](https://54singa.github.io/soft-matter-jelly-lab/)**
+## 在线体验
 
-[![Soft Matter interactive jelly playground](docs/soft-matter-jelly-lab.png)](https://54singa.github.io/soft-matter-jelly-lab/)
+**[点击体验果冻实验室](https://54singa.github.io/soft-matter-jelly-lab/)**
 
-## Run locally
+[![Soft Matter 果冻实验室](docs/soft-matter-jelly-lab.png)](https://54singa.github.io/soft-matter-jelly-lab/)
 
-Requires Node.js 22.13 or newer.
+## 玩法
+
+- 用鼠标或手指拖动果冻表面的任意位置。
+- 松手后，果冻会根据弹性与惯性继续运动。
+- 可以切换莓果、薄荷和蜂蜜三种颜色。
+- 可以分别调节硬度与内部阻尼。
+- 点击“重置”或按 `R` 键恢复果冻形状，当前材质参数会保留。
+- 滑块支持方向键、`Home` 和 `End` 键操作。
+
+## 本地运行
+
+需要 Node.js 22.13 或更高版本。
 
 ```sh
 npm install
 npm run dev -- --port 4399
 ```
 
-Open the address printed by the server. For a static production build:
+打开终端中显示的地址。生成静态生产版本：
 
 ```sh
 npm run build
 ```
 
-The generated site is in `dist/client/` and can be served by any static HTTP server. Use localhost or HTTPS for WebGPU. The renderer automatically falls back to WebGL2 when needed.
+生成的网站位于 `dist/client/`，可以通过任意静态 HTTP 服务器运行。WebGPU 需要 localhost 或 HTTPS；不支持 WebGPU 时会自动回退到 WebGL2。
 
-## Interaction
+## 实现方式
 
-- Drag any visible point on the jelly with the mouse or a finger.
-- Release to let stored elastic energy and inertia move the body.
-- Choose Berry, Mint, or Honey.
-- Change Firmness and Internal damping independently.
-- Reset specimen restores the body; the R key does the same. Current material settings are retained.
-- Sliders support arrow keys, Home, and End.
+`lib/soft-body.ts` 包含一个在 CPU 上运行的 XPBD 软体求解器：343 个粒子、1,296 个四面体体积约束，以及弹性边约束、重力、地面摩擦和速度阻尼。固定 120 Hz 的求解器通过插值驱动更细腻的平滑表面。射线检测的重心坐标会把精确抓取位置映射到模拟粒子，因此拖动会产生局部拉伸，而不是简单缩放整个模型。
 
-## Implementation
+`lib/jelly.ts` 包含 Three.js WebGPURenderer 场景。透光物理节点材质、双面表面、清漆、光线吸收、近似厚度场、折射环境光、动态法线与柔和接触阴影，共同形成湿润通透的视觉效果。场景优先使用 WebGPU，并提供 WebGL2 回退方案。
 
-`lib/soft-body.ts` contains a CPU XPBD soft-body solver: 343 particles, 1,296 tetrahedral volume constraints, elastic edge constraints, gravity, floor friction, and velocity damping. A fixed 120 Hz solver drives a finer smooth surface through interpolation. Raycast barycentric coordinates map the precise grab point to the simulation particles; this creates local stretch rather than a whole-object scale animation. Pointer capture handles releases outside the original hit region.
+`app/page.tsx` 包含交互控制和经过功能检测的可选 WebMCP `configure_jelly` 工具。项目没有服务端数据存储，也不依赖外部运行时资源。
 
-`lib/jelly.ts` contains the Three.js WebGPURenderer scene. Transmissive physical node materials, both surface sides, clearcoat, absorption, an approximate thickness field, refracted studio lighting, updated normals, and a dynamic soft contact shadow create the wet optical appearance. Optics and material stiffness are tuned artistically rather than calibrated laboratory measurements. The scene prefers WebGPU and has a WebGL2 fallback.
+## 验证
 
-`app/page.tsx` contains the controls and an optional feature-detected WebMCP `configure_jelly` tool. There is no server data storage or external runtime asset dependency.
-
-## Validation
-
-Actual browser pointer drags were performed on the upper/front and left portions of the surface, and both WebGPU and WebGL2 rendering were observed. Local strain increased during grabs; motion persisted after release and decayed. Color controls, slider keyboard endpoints, reset, and valid/invalid WebMCP settings were also checked. Independent solver stress runs covered softness and damping endpoints, volume preservation, and long settling.
+项目已在浏览器中测试果冻正面、顶部和侧面的拖动交互，并验证 WebGPU 与 WebGL2 渲染。抓取时会产生局部形变，松手后运动会延续并逐渐衰减。颜色切换、键盘控制滑块、重置功能、材质软硬与阻尼边界也已检查。
